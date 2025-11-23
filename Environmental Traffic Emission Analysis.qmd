@@ -1,0 +1,42 @@
+---
+title: "Environmental Traffic Emission Analysis"
+author: "2574849"
+format: html
+editor: visual
+---
+
+## Introduction
+
+The wide application of vehicles has brought convenience to people’s travel and daily lives. However, it has posed considerable challenges, including traffic congestion, severe air pollution, and adverse health impacts^1^.To evaluate the environmental impacts of this, researchers and stakeholders have established vehicle emission inventories to estimate the amount of air pollutants emitted from vehicle^2^. Traditional emission inventories often rely on annual averages or coarse spatial/temporal data, which makes it difficult to understand link-level variability in emissions and the real statistical relationship between traffic flow and emission intensity^3^. Therefore, this app provides users with a simple, compact analytical tool to investigate how traffic activities affect urban road emissions. It uses the regression model to quantitatively describe the relationship between traffic flow and emission intensity, and helps researchers to judge whether the road emission hotspots are driven by traffic flow or affected by other factors. This Shiny app solves the environmental statistical problem of quantifying and visualizing the relationship between traffic flow and emission intensity on urban road networks.
+
+## Methods
+
+### 1.Shiny App
+
+**1.1 App’s name**
+
+Vehicle Traffic and Emission Analysis
+
+**1.2 Purpose**
+
+This Shiny application is designed to explore the statistical relationship between traffic flow and emission intensity. It provides a scatter plot, fits a linear regression model, and displays model diagnostics to analyze the statistical relationship between traffic flow and emission intensity and visually explore whether higher emissions are driven primarily by more traffic activity.
+
+**1.3 Key features**
+
+**1.4 Dependencies**
+
+**1.5 AI tools**
+
+## Results and Discussions
+
+## Conclusion
+
+## AI Disclosure
+
+## References
+
+1.  Uherek, E., Halenka, T., Borken-Kleefeld, J., Balkanski, Y., Berntsen, T., Borrego, C., Gauss, M., Hoor, P., Juda-Rezler, K., and Lelieveld, J.: Transport impacts on atmosphere and climate: Land transport, Atmos. Environ., 44, 4772–4816, https://doi.org/10.1016/j.atmosenv.2010.01.002, 2010
+2.  Zhang, S., Niu, T., Wu, Y., Zhang, K. M., Wallington, T. J., Xie, Q., Wu, X., and Xu, H.: Fine-grained vehicle emission management using intelligent transportation system data, Environ. Pollut., 241, 1027–1037, https://doi.org/10.1016/j.envpol.2018.06.016, 2018.
+3.  Yang, D., Zhang, Y., Wu, R., Song, Y., and Xu, H.: A review of on-road vehicle emission inventory, E3S Web of Conferences, 27, 01027, https://doi.org/10.1051/e3sconf/20222701027, 2022.
+
+## 
