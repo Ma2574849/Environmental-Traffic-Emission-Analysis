@@ -23,7 +23,7 @@ selectInput("pollutant_select", "Select Pollutant:",
             choices = c("CO" = "CO Emission Intensity (g/km/h)",
                         "HC" = "HC Emission Intensity (g/km/h)",
                         "NOx" = "NOx Emission Intensity (g/km/h)", 
-                        "PM2.5" = "PM2.5 Emission Intensity (g/km/h)"),
+                        "PM\u2082.\u2085" = "PM2.5 Emission Intensity (g/km/h)"),
             selected = "CO Emission Intensity (g/km/h)"),
 # Traffic flow selection       
 selectInput("traffic_select", "Select Vehicle Type:",
@@ -33,14 +33,16 @@ selectInput("traffic_select", "Select Vehicle Type:",
                         "Total Vehicle Flow" = "Total Vehicle Flow(veh/h)"),
             selected = "Total Vehicle Flow(veh/h)"),
 
+# Range slection
+sliderInput("flow_range", "Traffic Flow Range (veh/h):",
+            min = 0, max = 27000, value = c(0, 27000)),
+sliderInput("emission_range", "Emission Intensity Range (g/km/h):",
+            min = 0, max = 16000, value = c(0, 16000)),
+
 # Visualization controls
 checkboxInput("show_trend",
               "Show Trend Line",
               value = TRUE),
-sliderInput("point_size",
-            "Point Size:",
-            min = 1, max = 10,
-            value = 3, step = 0.5),
 
 # Statistics section header
 h4("Data Summary"),

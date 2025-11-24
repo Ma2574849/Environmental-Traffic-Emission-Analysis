@@ -28,12 +28,22 @@ loaded_data <- reactive({
   return(data_list)
 })
   
-# Get current data
+# Get current filtered data
 current_data <- reactive({
   req(loaded_data(), input$sheet_select)
   data <- loaded_data()[[input$sheet_select]]
+  
+# Apply filters
+traffic_col <- input$traffic_select
+pollutant_col <- input$pollutant_select
+data <- data %>%
+  filter(.data[[traffic_col]] >= input$flow_range[1] & 
+            .data[[traffic_col]] <= input$flow_range[2]) %>%
+  filter(.data[[pollutant_col]] >= input$emission_range[1] & 
+            .data[[pollutant_col]] <= input$emission_range[2])
   return(data)
 })
+
     
 # Main scatter plot
 output$traffic_emission_scatter <- renderPlotly({
@@ -43,18 +53,17 @@ output$traffic_emission_scatter <- renderPlotly({
   pollutant_col <- input$pollutant_select
     
 # Create base plot
-p <- ggplot(data, aes(x = .data[[traffic_col]], y = .data[[pollutant_col]]))
-    
-# Add points
-p <- p + geom_point(aes(text = paste("Site:", ID,
-                                     "<br>Traffic:", round(.data[[traffic_col]], 1), "veh/h",
-                                     "<br>Emission:", round(.data[[pollutant_col]], 2), "g/km/h")), 
-                    color = "steelblue", size = 3, alpha = 0.7)
+p <- ggplot(data) +
+  geom_point(aes(x = .data[[traffic_col]], 
+                   y = .data[[pollutant_col]],
+                   text = paste("Site:", ID,
+                                "<br>Traffic:", round(.data[[traffic_col]], 1), "veh/h",
+                                "<br>Emission:", round(.data[[pollutant_col]], 2), "g/km/h")),color = "steelblue", size = 3, alpha = 0.7)
 
 # Add trend line if selected
 if (input$show_trend) {
-  p <- p + geom_smooth(method = "loess", se = FALSE, color = "darkorange", linewidth = 1)
-} 
+  p <- p + geom_smooth(aes(x = .data[[traffic_col]], 
+                           y = .data[[pollutant_col]]), data = data, method = "loess", se = FALSE, color = "darkorange", size = 1)} 
 
 # Axis labels
  x_label <- gsub(" Flow (veh/h)", "", traffic_col)
@@ -178,8 +187,9 @@ output$correlation_summary <- renderDT({
            `HDV Flow (veh/h)`, `LDV Flow (veh/h)`, `NEV Flow (veh/h)`, `Total Vehicle Flow(veh/h)`,
            `CO Emission Intensity (g/km/h)`, `HC Emission Intensity (g/km/h)`,
            `NOx Emission Intensity (g/km/h)`, `PM2.5 Emission Intensity (g/km/h)`)
-  
   datatable(display_data, 
+            colnames = c(names(display_data)[1:10], 'PM<sub>2.5</sub> Emission Intensity (g/km/h)'),
+            escape = FALSE,
             options = list(scrollX = TRUE, pageLength = 10),
             caption = "Traffic Flow and Emission Data")
  })
