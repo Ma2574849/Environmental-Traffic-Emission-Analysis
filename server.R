@@ -49,9 +49,12 @@ p <- ggplot(data, aes(x = .data[[traffic_col]], y = .data[[pollutant_col]]))
 p <- p + geom_point(aes(text = paste("Site:", ID,
                                      "<br>Traffic:", round(.data[[traffic_col]], 1), "veh/h",
                                      "<br>Emission:", round(.data[[pollutant_col]], 2), "g/km/h")), 
-                    color = "steelblue", 
-                    size = 3, 
-                    alpha = 0.7)
+                    color = "steelblue", size = 3, alpha = 0.7)
+
+# Add trend line if selected
+if (input$show_trend) {
+  p <- p + geom_smooth(method = "loess", se = FALSE, color = "darkorange", linewidth = 1)
+} 
 
 # Axis labels
  x_label <- gsub(" Flow (veh/h)", "", traffic_col)
@@ -68,9 +71,8 @@ p <- p +
         plot.subtitle = element_text(hjust = 0.5, size = 12),
         axis.title = element_text(size = 12))
  
-ggplotly(p, tooltip = "text") %>% 
-  layout(height = 600,
-        hoverlabel = list(bgcolor = "white", 
+ggplotly(p, tooltip = "text", height = 600) %>% 
+  layout(hoverlabel = list(bgcolor = "white", 
                           font = list(size = 12)),
         margin = list(t = 80))  
 })

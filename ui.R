@@ -32,7 +32,16 @@ selectInput("traffic_select", "Select Vehicle Type:",
                         "New Energy Vehicles (NEV)" = "NEV Flow (veh/h)", 
                         "Total Vehicle Flow" = "Total Vehicle Flow(veh/h)"),
             selected = "Total Vehicle Flow(veh/h)"),
- 
+
+# Visualization controls
+checkboxInput("show_trend",
+              "Show Trend Line",
+              value = TRUE),
+sliderInput("point_size",
+            "Point Size:",
+            min = 1, max = 10,
+            value = 3, step = 0.5),
+
 # Statistics section header
 h4("Data Summary"),
 helpText("Statistical summaries for selected data")),
