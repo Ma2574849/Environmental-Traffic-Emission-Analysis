@@ -35,9 +35,9 @@ selectInput("traffic_select", "Select Vehicle Type:",
 
 # Range slection
 sliderInput("flow_range", "Traffic Flow Range (veh/h):",
-            min = 0, max = 27000, value = c(0, 27000)),
+            min = 0, max = 27000, value = c(0, 27000), step = 100),
 sliderInput("emission_range", "Emission Intensity Range (g/km/h):",
-            min = 0, max = 16000, value = c(0, 16000)),
+            min = 0, max = 16000, value = c(0, 16000), step = 100),
 
 # Visualization controls
 checkboxInput("show_trend",
@@ -66,7 +66,10 @@ br(),
     fluidRow(
      column(6,
       h4("Correlation Analysis"),
-      DTOutput("correlation_summary")))),
+      DTOutput("correlation_summary")),
+     column(6,
+      h4("Statistical Tests"),
+      DTOutput("statistical_tests")))),
    tabPanel("Data Table",
     fluidRow(
       DTOutput("data_table"))),
