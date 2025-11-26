@@ -352,7 +352,7 @@ function(input, output, session) {
       domain = emission_values
     )
     
-    # Create popup content without using .data pronoun
+    # Create popup content 
     popup_content <- paste0(
       "<b>Site ID: </b>", data$ID, "<br>",
       "<b>Flow: </b>", round(data[[traffic_col]], 1), " veh/h<br>",

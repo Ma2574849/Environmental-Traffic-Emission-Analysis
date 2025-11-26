@@ -76,10 +76,8 @@ br(),
       DTOutput("data_table"))),
    tabPanel("Map",
     fluidRow(
-      leafletOutput("map_plot", height = "650px")             
-    )
+      leafletOutput("map_plot", height = "650px")))
    )
   )
-)
-    )
+ )
 )
