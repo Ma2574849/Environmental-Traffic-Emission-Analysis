@@ -7,6 +7,7 @@ if (!require(DT)) install.packages("DT")
 if (!require(readxl)) install.packages("readxl")
 if (!require(corrplot)) install.packages("corrplot")
 if (!require(psych)) install.packages("psych")
+if (!require(leaflet)) install.packages("leaflet")
 
 # Load required libraries
 library(shiny)
@@ -17,6 +18,7 @@ library(DT)
 library(readxl)
 library(corrplot)
 library(psych)
+library(leaflet)
 
 # Define server logic
 function(input, output, session) {
@@ -197,14 +199,14 @@ function(input, output, session) {
                     "Sample Size",
                     "Data Distribution"),
       Value = c(
-        "Spearman's Rank (Non-parametric)",
+        "Spearman's Rank",
         round(spearman_cor$estimate, 6),
         format.pval(spearman_cor$p.value, digits = 4),
         strength,
         direction,
         significance,
         format(nrow(data), big.mark = ","),
-        "Non-normal (using non-parametric method)"
+        "Non-normal"
       )
     )
     
@@ -227,6 +229,10 @@ function(input, output, session) {
       # Get the data for selected columns
       traffic_data <- data[[traffic_col]]
       pollution_data <- data[[pollutant_col]]
+      
+      # Perform normality tests (Shapiro-Wilk test)
+      normality_traffic <- shapiro.test(traffic_data)
+      normality_pollution <- shapiro.test(pollution_data)
       
       # Perform Spearman's rank correlation test
       spearman_test <- cor.test(traffic_data, pollution_data, 
@@ -251,31 +257,38 @@ function(input, output, session) {
       tests_df <- data.frame(
         Test = c("Sample Size", 
                  "Complete Cases", 
+                 "Normality Test (Traffic) - p-value",
+                 "Normality Test (Pollution) - p-value",
+                 "Data Distribution Assessment",
                  "Spearman's Rank Correlation (ρ)", 
                  "P-value", 
                  "Relationship Strength",
                  "Relationship Direction",
-                 "Statistical Significance",
-                 "Test Method"),
+                 "Statistical Significance"),
         Result = c(
           format(nrow(data), big.mark = ","),
           format(length(traffic_data), big.mark = ","),
+          format.pval(normality_traffic$p.value, digits = 4),
+          format.pval(normality_pollution$p.value, digits = 4),
+          ifelse(normality_traffic$p.value < 0.05 | normality_pollution$p.value < 0.05, 
+                 "Non-normal distribution", "Normal distribution"),
           round(spearman_test$estimate, 6),
           format.pval(spearman_test$p.value, digits = 4),
           strength,
           direction,
-          significance,
-          "Spearman's Rank Correlation (Non-parametric)"
+          significance
         ),
         Interpretation = c(
           "Total observations in filtered data",
           "Observations with complete data for both variables",
+          "Shapiro-Wilk test for normality (p < 0.05 indicates non-normal)",
+          "Shapiro-Wilk test for normality (p < 0.05 indicates non-normal)",
+          "Overall assessment of data distribution",
           "Monotonic relationship coefficient (-1 to +1)",
           "Probability of observing this relationship by chance",
           "Strength of the monotonic relationship",
           "Direction of the relationship",
-          "Statistical significance level",
-          "Appropriate for non-normal data distributions"
+          "Statistical significance level"
         )
       )
       
@@ -316,5 +329,57 @@ function(input, output, session) {
               escape = FALSE,
               options = list(scrollX = TRUE, pageLength = 10),
               caption = "Traffic Flow and Emission Data")
+  })
+  
+  # Map visualization
+  output$map_plot <- renderLeaflet({
+    data <- current_data()
+    req(data)
+    
+    traffic_col <- input$traffic_select
+    pollutant_col <- input$pollutant_select
+    
+    # Normalize marker size based on traffic flow
+    flow_values <- data[[traffic_col]]
+    flow_scaled <- (flow_values - min(flow_values)) / 
+      (max(flow_values) - min(flow_values) + 1e-10)
+    marker_sizes <- 1 + flow_scaled * 10  
+    
+    # Color scale for emission
+    emission_values <- data[[pollutant_col]]
+    pal <- colorNumeric(
+      palette = "YlOrRd",
+      domain = emission_values
+    )
+    
+    # Create popup content without using .data pronoun
+    popup_content <- paste0(
+      "<b>Site ID: </b>", data$ID, "<br>",
+      "<b>Flow: </b>", round(data[[traffic_col]], 1), " veh/h<br>",
+      "<b>Emission: </b>", round(data[[pollutant_col]], 2), " g/km/h<br>",
+      "<b>Time Period: </b>", input$sheet_select
+    )
+    
+    leaflet(data) %>%
+      addProviderTiles("CartoDB.Positron") %>%  
+      addCircleMarkers(
+        lng = ~Longitude,
+        lat = ~Latitude,
+        radius = marker_sizes,
+        color = ~pal(emission_values),
+        stroke = FALSE,
+        fillOpacity = 0.8,
+        popup = popup_content
+      ) %>%
+      addLegend(
+        "bottomright",
+        pal = pal,
+        values = ~emission_values,
+        title = paste(gsub(" Emission Intensity \\(g/km/h\\)", "", pollutant_col), 
+                      "<br>Emission (g/km/h)")
+      ) %>%
+      setView(lng = mean(data$Longitude, na.rm = TRUE), 
+              lat = mean(data$Latitude, na.rm = TRUE), 
+              zoom = 10)
   })
 }

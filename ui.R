@@ -5,6 +5,7 @@ library(dplyr)
 library(plotly)
 library(DT)
 library(readxl)
+library(leaflet)
 
 fluidPage(
     titlePanel("Vehicle Traffic and Emission Analysis"),
@@ -73,7 +74,12 @@ br(),
    tabPanel("Data Table",
     fluidRow(
       DTOutput("data_table"))),
-             )
-         )
-     )
+   tabPanel("Map",
+    fluidRow(
+      leafletOutput("map_plot", height = "650px")             
+    )
+   )
+  )
+)
+    )
 )
