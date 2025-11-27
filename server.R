@@ -1,26 +1,7 @@
-# Install required packages if not already installed
-if (!require(shiny)) install.packages("shiny")
-if (!require(ggplot2)) install.packages("ggplot2")
-if (!require(dplyr)) install.packages("dplyr")
-if (!require(plotly)) install.packages("plotly")
-if (!require(DT)) install.packages("DT")
-if (!require(readxl)) install.packages("readxl")
-if (!require(corrplot)) install.packages("corrplot")
-if (!require(psych)) install.packages("psych")
-if (!require(leaflet)) install.packages("leaflet")
+libs <- c("shiny","ggplot2","dplyr","plotly","DT","readxl","leaflet")
+for (p in libs) if (!require(p, character.only = TRUE)) install.packages(p)
 
-# Load required libraries
-library(shiny)
-library(ggplot2)
-library(dplyr)
-library(plotly)
-library(DT)
-library(readxl)
-library(corrplot)
-library(psych)
-library(leaflet)
-
-# Define server logic
+# Define server logic 
 function(input, output, session) {
   
   # Load data
@@ -85,7 +66,7 @@ function(input, output, session) {
     # Add trend line if selected
     if (input$show_trend) {
       p <- p + geom_smooth(aes(x = .data[[traffic_col]], 
-                               y = .data[[pollutant_col]]), data = data, method = "loess", se = FALSE, color = "darkorange", size = 1)
+                               y = .data[[pollutant_col]]), data = data, method = "loess", se = FALSE, color = "darkorange", linewidth = 1)
     } 
     
     # Axis labels
@@ -107,6 +88,96 @@ function(input, output, session) {
       layout(hoverlabel = list(bgcolor = "white", 
                                font = list(size = 10)),
              margin = list(t = 80))  
+  })
+  
+  # Traffic Flow Histogram
+  output$traffic_histogram <- renderPlotly({
+    data <- current_data()
+    req(data)
+    
+    traffic_col <- input$traffic_select
+    
+    p <- ggplot(data, aes(x = .data[[traffic_col]])) +
+      geom_histogram(aes(y = ..density..), 
+                     bins = 30, 
+                     fill = "steelblue", 
+                     alpha = 0.7, 
+                     color = "white") +
+      geom_density(alpha = 0.2, fill = "orange", color = "darkorange") +
+      labs(title = "Traffic Flow Distribution",
+           x = traffic_col,
+           y = "Density") +
+      theme_minimal() +
+      theme(plot.title = element_text(hjust = 0.5, size = 12),
+            axis.title = element_text(size = 10))
+    
+    ggplotly(p, height = 300) %>%
+      layout(margin = list(t = 50, b = 50))
+  })
+  
+  # Traffic Flow Boxplot
+  output$traffic_boxplot <- renderPlotly({
+    data <- current_data()
+    req(data)
+    
+    traffic_col <- input$traffic_select
+    
+    p <- ggplot(data, aes(y = .data[[traffic_col]])) +
+      geom_boxplot(fill = "steelblue", alpha = 0.7, outlier.color = "red") +
+      labs(title = "Traffic Flow Boxplot",
+           y = traffic_col) +
+      theme_minimal() +
+      theme(plot.title = element_text(hjust = 0.5, size = 12),
+            axis.title = element_text(size = 10),
+            axis.text.x = element_blank())
+    
+    ggplotly(p, height = 300) %>%
+      layout(margin = list(t = 50, b = 50))
+  })
+  
+  # Emission Intensity Histogram
+  output$emission_histogram <- renderPlotly({
+    data <- current_data()
+    req(data)
+    
+    pollutant_col <- input$pollutant_select
+    
+    p <- ggplot(data, aes(x = .data[[pollutant_col]])) +
+      geom_histogram(aes(y = ..density..), 
+                     bins = 30, 
+                     fill = "darkorange", 
+                     alpha = 0.7, 
+                     color = "white") +
+      geom_density(alpha = 0.2, fill = "steelblue", color = "darkblue") +
+      labs(title = "Emission Intensity Distribution",
+           x = pollutant_col,
+           y = "Density") +
+      theme_minimal() +
+      theme(plot.title = element_text(hjust = 0.5, size = 12),
+            axis.title = element_text(size = 10))
+    
+    ggplotly(p, height = 300) %>%
+      layout(margin = list(t = 50, b = 50))
+  })
+  
+  # Emission Intensity Boxplot
+  output$emission_boxplot <- renderPlotly({
+    data <- current_data()
+    req(data)
+    
+    pollutant_col <- input$pollutant_select
+    
+    p <- ggplot(data, aes(y = .data[[pollutant_col]])) +
+      geom_boxplot(fill = "darkorange", alpha = 0.7, outlier.color = "red") +
+      labs(title = "Emission Intensity Boxplot",
+           y = pollutant_col) +
+      theme_minimal() +
+      theme(plot.title = element_text(hjust = 0.5, size = 12),
+            axis.title = element_text(size = 10),
+            axis.text.x = element_blank())
+    
+    ggplotly(p, height = 300) %>%
+      layout(margin = list(t = 50, b = 50))
   })
   
   # Pollution statistics
@@ -163,60 +234,6 @@ function(input, output, session) {
               rownames = FALSE)
   })
   
-  # Correlation Analysis - Using Spearman for non-normal data
-  output$correlation_summary <- renderDT({
-    data <- current_data()
-    req(data, nrow(data) > 1)
-    
-    traffic_col <- input$traffic_select
-    pollutant_col <- input$pollutant_select
-    
-    # Calculate Spearman's rank correlation (non-parametric)
-    spearman_cor <- cor.test(data[[traffic_col]], data[[pollutant_col]], 
-                             method = "spearman", use = "complete.obs", exact = FALSE)
-    
-    # Create correlation strength description for Spearman
-    strength <- if (abs(spearman_cor$estimate) > 0.7) {
-      "Strong"
-    } else if (abs(spearman_cor$estimate) > 0.3) {
-      "Moderate"
-    } else {
-      "Weak"
-    }
-    
-    direction <- if (spearman_cor$estimate > 0) "Positive" else "Negative"
-    significance <- if (spearman_cor$p.value < 0.001) "***" else 
-      if (spearman_cor$p.value < 0.01) "**" else 
-        if (spearman_cor$p.value < 0.05) "*" else "Not significant"
-    
-    summary_df <- data.frame(
-      Statistic = c("Correlation Method", 
-                    "Spearman's Rank Correlation (ρ)", 
-                    "P-value", 
-                    "Relationship Strength", 
-                    "Relationship Direction",
-                    "Statistical Significance", 
-                    "Sample Size",
-                    "Data Distribution"),
-      Value = c(
-        "Spearman's Rank",
-        round(spearman_cor$estimate, 6),
-        format.pval(spearman_cor$p.value, digits = 4),
-        strength,
-        direction,
-        significance,
-        format(nrow(data), big.mark = ","),
-        "Non-normal"
-      )
-    )
-    
-    summary_df <- summary_df[, c("Statistic", "Value")]
-    
-    datatable(summary_df, 
-              options = list(dom = 't', paging = FALSE, searching = FALSE, ordering = FALSE),
-              rownames = FALSE)
-  })
-  
   # Statistical Tests output
   output$statistical_tests <- renderDT({
     data <- current_data()
@@ -239,13 +256,8 @@ function(input, output, session) {
                                 method = "spearman", exact = FALSE)
       
       # Create correlation strength description
-      strength <- if (abs(spearman_test$estimate) > 0.7) {
-        "Strong"
-      } else if (abs(spearman_test$estimate) > 0.3) {
-        "Moderate"
-      } else {
-        "Weak"
-      }
+      strength <- ifelse(abs(spearman_test$estimate) > 0.7, "Strong",
+                         ifelse(abs(spearman_test$estimate) > 0.3, "Moderate", "Weak"))
       
       # Determine direction and significance
       direction <- if (spearman_test$estimate > 0) "Positive" else "Negative"
@@ -313,24 +325,6 @@ function(input, output, session) {
     })
   })
   
-  # Data table
-  output$data_table <- renderDT({
-    data <- current_data()
-    req(data)
-    
-    # Select relevant columns for display
-    display_data <- data %>%
-      select(ID, Longitude, Latitude, 
-             `HDV Flow (veh/h)`, `LDV Flow (veh/h)`, `NEV Flow (veh/h)`, `Total Vehicle Flow(veh/h)`,
-             `CO Emission Intensity (g/km/h)`, `HC Emission Intensity (g/km/h)`,
-             `NOx Emission Intensity (g/km/h)`, `PM2.5 Emission Intensity (g/km/h)`)
-    datatable(display_data, 
-              colnames = c(names(display_data)[1:10], 'PM<sub>2.5</sub> Emission Intensity (g/km/h)'),
-              escape = FALSE,
-              options = list(scrollX = TRUE, pageLength = 10),
-              caption = "Traffic Flow and Emission Data")
-  })
-  
   # Map visualization
   output$map_plot <- renderLeaflet({
     data <- current_data()
@@ -381,5 +375,23 @@ function(input, output, session) {
       setView(lng = mean(data$Longitude, na.rm = TRUE), 
               lat = mean(data$Latitude, na.rm = TRUE), 
               zoom = 10)
+  })
+  
+  # Data table
+  output$data_table <- renderDT({
+    data <- current_data()
+    req(data)
+    
+    # Select relevant columns for display
+    display_data <- data %>%
+      select(ID, Longitude, Latitude, 
+             `HDV Flow (veh/h)`, `LDV Flow (veh/h)`, `NEV Flow (veh/h)`, `Total Vehicle Flow(veh/h)`,
+             `CO Emission Intensity (g/km/h)`, `HC Emission Intensity (g/km/h)`,
+             `NOx Emission Intensity (g/km/h)`, `PM2.5 Emission Intensity (g/km/h)`)
+    datatable(display_data, 
+              colnames = c(names(display_data)[1:10], 'PM<sub>2.5</sub> Emission Intensity (g/km/h)'),
+              escape = FALSE,
+              options = list(scrollX = TRUE, pageLength = 10),
+              caption = "Traffic Flow and Emission Data")
   })
 }

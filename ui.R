@@ -41,9 +41,7 @@ sliderInput("emission_range", "Emission Intensity Range (g/km/h):",
             min = 0, max = 16000, value = c(0, 16000), step = 100),
 
 # Visualization controls
-checkboxInput("show_trend",
-              "Show Trend Line",
-              value = TRUE),
+checkboxInput("show_trend", "Show Trend Line", value = TRUE),
 
 # Statistics section header
 h4("Data Summary"),
@@ -55,6 +53,7 @@ mainPanel(
    tabPanel("Visualization",
     fluidRow(
      plotlyOutput("traffic_emission_scatter", height = "600px"))),
+   
    tabPanel("Statistics",
     fluidRow(
      column(6,
@@ -66,18 +65,16 @@ mainPanel(
 br(),
     fluidRow(
      column(6,
-      h4("Correlation Analysis"),
-      DTOutput("correlation_summary")),
-     column(6,
       h4("Statistical Tests"),
       DTOutput("statistical_tests")))),
-   tabPanel("Data Table",
-    fluidRow(
-      DTOutput("data_table"))),
    tabPanel("Map",
     fluidRow(
-      leafletOutput("map_plot", height = "650px")))
+     leafletOutput("map_plot", height = "650px"))),
+   tabPanel("Data Table",
+    fluidRow(
+      DTOutput("data_table")))
+   
    )
   )
- )
+)
 )
