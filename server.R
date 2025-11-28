@@ -142,7 +142,7 @@ function(input, output, session) {
     
     pollutant_col <- input$pollutant_select
     
-    p <- ggplot(data, aes(x = .data[[pollutant_col]])) +
+    p <- ggplot(data, aes(x = .data[[pollutant_col]])) + 
       geom_histogram(aes(y = ..density..), 
                      bins = 30, 
                      fill = "darkorange", 

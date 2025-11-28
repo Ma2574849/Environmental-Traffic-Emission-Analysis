@@ -54,6 +54,17 @@ mainPanel(
     fluidRow(
      plotlyOutput("traffic_emission_scatter", height = "600px"))),
    
+   tabPanel("Distribution",
+    fluidRow(
+     column(6,
+      h4("Traffic Flow Distribution"),
+      plotlyOutput("traffic_histogram", height = "300px"),
+      plotlyOutput("traffic_boxplot", height = "300px")),
+     column(6,
+      h4("Emission Intensity Distribution"),
+      plotlyOutput("emission_histogram", height = "300px"),
+      plotlyOutput("emission_boxplot", height = "300px")))),
+   
    tabPanel("Statistics",
     fluidRow(
      column(6,
