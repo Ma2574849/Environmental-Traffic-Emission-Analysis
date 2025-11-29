@@ -1,4 +1,4 @@
-libs <- c("shiny","ggplot2","dplyr","plotly","DT","readxl","leaflet")
+libs <- c("shiny","ggplot2","dplyr","plotly","DT","readxl", "QuantPsyc", "leaflet")
 for (p in libs) if (!require(p, character.only = TRUE)) install.packages(p)
 
 # Define server logic 
@@ -267,62 +267,113 @@ function(input, output, session) {
       
       # Create results table
       tests_df <- data.frame(
-        Test = c("Sample Size", 
-                 "Complete Cases", 
-                 "Normality Test (Traffic) - p-value",
-                 "Normality Test (Pollution) - p-value",
-                 "Data Distribution Assessment",
-                 "Spearman's Rank Correlation (ρ)", 
-                 "P-value", 
-                 "Relationship Strength",
-                 "Relationship Direction",
-                 "Statistical Significance"),
-        Result = c(
-          format(nrow(data), big.mark = ","),
-          format(length(traffic_data), big.mark = ","),
-          format.pval(normality_traffic$p.value, digits = 4),
-          format.pval(normality_pollution$p.value, digits = 4),
-          ifelse(normality_traffic$p.value < 0.05 | normality_pollution$p.value < 0.05, 
-                 "Non-normal distribution", "Normal distribution"),
-          round(spearman_test$estimate, 6),
-          format.pval(spearman_test$p.value, digits = 4),
-          strength,
-          direction,
-          significance
-        ),
-        Interpretation = c(
-          "Total observations in filtered data",
-          "Observations with complete data for both variables",
-          "Shapiro-Wilk test for normality (p < 0.05 indicates non-normal)",
-          "Shapiro-Wilk test for normality (p < 0.05 indicates non-normal)",
-          "Overall assessment of data distribution",
-          "Monotonic relationship coefficient (-1 to +1)",
-          "Probability of observing this relationship by chance",
-          "Strength of the monotonic relationship",
-          "Direction of the relationship",
-          "Statistical significance level"
-        )
+        "N" = format(nrow(data), big.mark = ","),
+        "Complete" = format(length(traffic_data), big.mark = ","),
+        "Traffic Norm" = ifelse(normality_traffic$p.value < 0.05, "Non-normal", "Normal"),
+        "Pollution Norm" = ifelse(normality_pollution$p.value < 0.05, "Non-normal", "Normal"),
+        "Spearman ρ" = round(spearman_test$estimate, 3),
+        "P" = format.pval(spearman_test$p.value, digits = 3),
+        "Strength" = strength,
+        "Direction" = direction,
+        "Sig" = significance,
+        check.names = FALSE
       )
-      
-      # Use base R to select columns
-      tests_df <- tests_df[, c("Test", "Result", "Interpretation")]
       
       datatable(tests_df, 
                 options = list(
                   dom = 't', 
                   paging = FALSE, 
                   searching = FALSE, 
-                  ordering = FALSE,
-                  columnDefs = list(
-                    list(width = '200px', targets = 0),
-                    list(width = '150px', targets = 1),
-                    list(width = '300px', targets = 2)
-                  )
+                  ordering = FALSE
                 ),
-                rownames = FALSE) %>%
-        formatStyle(columns = c(0, 1, 2), fontSize = '14px')
+                rownames = FALSE,
+                caption = "Statistical Test Results") %>%
+        formatStyle(columns = c(0:8), fontSize = '12px')
       
     })
+  })
+  
+  # Vehicle Contribution
+  output$vehicle_contribution_plot <- renderPlotly({
+    data <- current_data()
+    req(data)
+    pollutant_col <- input$pollutant_select
+    
+    # Use available flows
+    predictors <- c("HDV Flow (veh/h)", 
+                    "LDV Flow (veh/h)", 
+                    "NEV Flow (veh/h)")
+    predictors <- predictors[predictors %in% colnames(data)]
+    
+    # Build regression formula
+    formula <- as.formula(
+      paste0("`", pollutant_col, "` ~ `", 
+             paste(predictors, collapse = "` + `"), "`")
+    )
+    
+    # Fit model
+    model <- lm(formula, data = data)
+    
+    # Standardized coefficients
+    beta <- lm.beta(model)
+    
+    beta_df <- data.frame(
+      Vehicle = names(beta),
+      Standardized_Effect = as.numeric(beta)
+    )
+    
+    p <- ggplot(beta_df, aes(x = reorder(Vehicle, Standardized_Effect), 
+                             y = Standardized_Effect, fill = Standardized_Effect)) +
+      geom_col() +
+      coord_flip() +
+      labs(title = "Standardized Contribution of Each Vehicle Type to CO Emissions",
+           x = "Vehicle Category",
+           y = "Standardized Effect (β)") +
+      theme_minimal() +
+      theme(plot.title = element_text(size = 11),
+            axis.title = element_text(size = 10),
+            axis.text = element_text(size = 10))
+    ggplotly(p)
+  })
+  
+  
+  output$vehicle_contribution_table <- renderDT({
+    data <- current_data()
+    req(data)
+    
+    pollutant_col <- input$pollutant_select
+    
+    predictors <- c("HDV Flow (veh/h)", 
+                    "LDV Flow (veh/h)", 
+                    "NEV Flow (veh/h)")
+    
+    predictors <- predictors[predictors %in% colnames(data)]
+    
+    formula <- as.formula(
+      paste0("`", pollutant_col, "` ~ `", 
+             paste(predictors, collapse = "` + `"), "`")
+    )
+    
+    model <- lm(formula, data = data)
+    
+    summary_m <- summary(model)
+    
+    effect_df <- data.frame(
+      Vehicle = predictors,
+      Estimate = summary_m$coefficients[-1, 1],
+      Std.Error = summary_m$coefficients[-1, 2],
+      t.value = summary_m$coefficients[-1, 3],
+      p.value = summary_m$coefficients[-1, 4]
+    )
+    
+    # Add significance marks
+    effect_df$Significance <- cut(effect_df$p.value,
+                                  breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+                                  labels = c("***", "**", "*", "ns"))
+    
+    datatable(effect_df,
+              options = list(dom = 't', paging = FALSE),
+              rownames = FALSE)
   })
   
   # Map visualization
@@ -384,14 +435,13 @@ function(input, output, session) {
     
     # Select relevant columns for display
     display_data <- data %>%
-      select(ID, Longitude, Latitude, 
+      dplyr::select(ID, Longitude, Latitude, 
              `HDV Flow (veh/h)`, `LDV Flow (veh/h)`, `NEV Flow (veh/h)`, `Total Vehicle Flow(veh/h)`,
-             `CO Emission Intensity (g/km/h)`, `HC Emission Intensity (g/km/h)`,
-             `NOx Emission Intensity (g/km/h)`, `PM2.5 Emission Intensity (g/km/h)`)
+             `CO Emission Intensity (g/km/h)`)
     datatable(display_data, 
-              colnames = c(names(display_data)[1:10], 'PM<sub>2.5</sub> Emission Intensity (g/km/h)'),
+              colnames = c(names(display_data)[1:8]),
               escape = FALSE,
               options = list(scrollX = TRUE, pageLength = 10),
-              caption = "Traffic Flow and Emission Data")
+              caption = "Traffic Flow and CO Emission Data")
   })
 }

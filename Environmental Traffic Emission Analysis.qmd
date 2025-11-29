@@ -1,13 +1,16 @@
 ---
-title: "Environmental Traffic Emission Analysis"
+title: "Vehicle Traffic and Emission Analysis"
 author: "2574849"
 format: html
 editor: visual
+bibliography: references.bib
 ---
 
 ## Introduction
 
-The wide application of vehicles has brought convenience to people’s travel and daily lives. However, it has posed considerable challenges, including traffic congestion, severe air pollution, and adverse health impacts^1^.To evaluate the environmental impacts of this, researchers and stakeholders have established vehicle emission inventories to estimate the amount of air pollutants emitted from vehicle^2^. Traditional emission inventories often rely on annual averages or coarse spatial/temporal data, which makes it difficult to understand link-level variability in emissions and the real statistical relationship between traffic flow and emission intensity^3^. Therefore, this app provides users with a simple, compact analytical tool to investigate how traffic activities affect urban road emissions. It uses the regression model to quantitatively describe the relationship between traffic flow and emission intensity, and helps researchers to judge whether the road emission hotspots are driven by traffic flow or affected by other factors. This Shiny app solves the environmental statistical problem of quantifying and visualizing the relationship between traffic flow and emission intensity on urban road networks.
+The wide application of vehicles has brought convenience to people’s travel and daily lives. However, it has posed considerable challenges, including traffic congestion, severe air pollution, and adverse health impacts^1^[@uherek2010].To evaluate the environmental impacts of this, researchers and stakeholders have established vehicle emission inventories to estimate the amount of air pollutants emitted from vehicle^2^[@zhang2018]. Traditional emission inventories often rely on annual averages or coarse spatial/temporal data, which makes it difficult to understand link-level variability in emissions and the real statistical relationship between traffic flow and emission intensity^3^[@yang2022].
+
+Therefore, this app provides users with a simple, interactive analytical tool to analyze, visualize, and statistically evaluate the relationship between traffic flow and CO emission intensity in different time periods. The primary environmental statistical problem handled by this study is: Are emission hotspots driven by high traffic flow, and which vehicle type contribute most to CO emissions?
 
 ## Methods
 
@@ -19,24 +22,237 @@ Vehicle Traffic and Emission Analysis
 
 **1.2 Purpose**
 
-This Shiny application is designed to explore the statistical relationship between traffic flow and emission intensity. It provides a scatter plot, fits a linear regression model, and displays model diagnostics to analyze the statistical relationship between traffic flow and emission intensity and visually explore whether higher emissions are driven primarily by more traffic activity.
+This Shiny application is designed to explore the statistical relationship between different types of traffic flow and on-road CO emission intensity. It utilizes interactive scatter plots, distribution analysis, vehicle contribution plots and spatial mapping tools for visualization. Analyze the distribution of both traffic and emission data and identify when and where high traffic flows of specific vehicle types correlate with abnormal emission intensities. It also quantitatively analyzes the relationship between traffic and emissions by providing tools such as dynamic filter, trend analysis, and statistical tests. Users can quantify the relative contribution of different vehicle types to CO emission intensity with the multiple linear regression model.
 
 **1.3 Key features**
 
+\(1\) Data selection and filtering
+
+| Users can select different time periods, vehicle flow types and filter by traffic flow and emission intensity ranges.
+| Function: Help users select data types and ranges based on their analysis needs.
+
+\(2\) Interactive visualizations
+
+| **Scatter plots:** Dynamic relationship plots between traffic flow and emission intensity with optional LOESS trend line interactive tool tips showing site ID, traffic flow, emission intensity.
+| Function: It allows users switch traffic_select to assess how emission intensity change with varying traffic flow and identify linear or nonlinear patterns with LOESS trend line. Users can also use tool tips to identify abnormal roads, such as low-traffic high-emission roads.
+| **Distribution analysis:** Histograms and boxplots for both traffic and emission data.
+| Function: From these plots, users can observe the outliers, central tendency and dispersion of the data and determine whether there is a significant skewness or long-tailed distribution. Throuh these observations, users can determine whether the data conform to normality, which establishes the basis for selecting statistical testing methods.
+| **Map:** Leaflet maps show geographical distribution of monitoring sites and tool tips showing site ID, traffic flow, emission intensity and time period. In this map, dot size indicates traffic volume and color indicates the level of emission intensity.
+| Function: It allows users to identify spatial hotspots with high emissions or high flows and determine whether the distribution of traffic congestion and emission has spatial consistency. What's more, users can find spatial clustering between sites, such as higher emissions in specific areas, which can support them in environmental management and intervention.
+
+(3) Statistical analysis
+
+| **Descriptive statistics:** Mean, median, standard deviation, range, and IQR for both traffic and emission data.
+| Function: Help users quickly understand the central tendency and dispersion of data, providing foundational information for subsequent statistical tests.
+| **Statistical testing:** Shapiro-Wilk normality tests and Spearman's rank correlation analysis.
+| Function: Through Shapiro-Wilk normality tests, users can determine whether the traffic and emission data are normally distributed, thus determine whether to use parametric test or nonparametric test. Spearman's rank correlation analysis quantify whether traffic flow significantly influences emissions and provide statistical evidence to support the answer of environmental statistical problems: whether the formation of emission hotspots has a clear relationship with the change of traffic flow in statistics.
+
+\(4\) Vehicle contribution modeling
+
+| Use multiple linear regression model estimates how traffic flow for different vehicle types jointly influence CO emission intensity and standardized coefficients (β) to compare effect size. Generating a contribution bar chart for visualization and a significance Table displaying p-values and t-values.
+| Function: It allows users to identify which vehicle category is the dominant emission contributor and compare relative influence using standardized β. Users can assess significance using p-values.
+
+(5)Data table
+
+| Provide a complete dataset of traffic flow and emissions
+| Function: The data table provide transparent access to the raw dataset, helping users to verify data quality and check for extreme observations.
+
 **1.4 Dependencies**
+
+| R version: 4.5.2
+| R packages: shiny, ggplot2, dplyr, plotly, DT, ntPsyc, leaflet
 
 **1.5 AI tools**
 
+Deepseek, ChatGPT
+
+\(1\) Code debugging and optimization
+
+| Tools: ChatGPT, Deepseek
+| Application:Help resolve responsive programming issues and package dependency conflicts in Shiny applications
+| Verification method:Test the code snippet to ensure the function executes correctly.
+
+\(2\) APP layout design
+
+| Tools: ChatGPT
+| Application: Optimize the app layout
+| Verification method: Run the Shiny App to see if the layout is clearer.
+
+\(3\) Optimize the server structure
+
+| Tools: ChatGPT
+| Application: Check if the code has the problem of repeated function.
+| Verification method: Run the Shiny App to see if the modified code lacks analysis results.
+
+### 2. Data
+
+The raw dataset of this Shiny App is from the reference literature "High-resolution mapping of on-road vehicle emissions with real-time traffic datasets based on big data"^4^[@wang2025]. The raw dataset record traffic flow and emission intensity in different time periods. Each row corresponds to a road link identified by its ID and geographic coordinates. This app choose traffic flow of all the vehicle types, and CO emission intensity in peak hour and off-peak hour as raw dataset.
+
 ## Results and Discussions
+
+### 1. Scatter Plot Analysis
+
+**1.1 Relationship between LDV/NEV flow and emission intensity**
+
+Figure 1 and Figure 2 respectively illustrates the relationship between traffic flow of different vehicle types and CO emission intensity during peak hours and off-peak hours. Except for HDVs, all other vehicle types show a significant positive correlation and a distinct nonlinear trend. The NDV flow is very low and LOESS in the graph shows a slight increase followed by stabilization or even a decline, with scattered data points and weak correlation.This is a typical nonlinear pattern. Compared with peak hours, emissions levels during off-peak periods show an overall decline, demonstrating that emission intensity is significantly influenced by driving conditions, not just vehicle flow.
+
+![](image/p.png){width="627"}
+
+figure 1. Scatter plots of relationship between traffic flow of different vehicle type and CO emission intensity in peak hour
+
+![](image/o.png){width="630"}
+
+figure 2. Scatter plots of relationship between traffic flow of different vehicle type and CO emission intensity in off-peak hour
+
+### 2. Distribution Analysis
+
+**2.1 Distribution of CO Emission Intensity**
+
+From figure 3, the histogram shows a sharp peak at low CO emission values, followed by a long, heavy right tail extending up to about 15,000 g/km/h. The box is concentrated at relatively low CO emission values with numerous extreme value. These distributions indicate that most of roads exhibit low to moderate CO emission intensity and there are also some high-emission hotspots. The results suggest that CO emissions vary greatly from one road link to another. High emissions tend to occur at specific local sites where traffic conditions or road characteristics create specific situations.
+
+![](image/CO.png){width="753"}
+
+figure 3. Distribution of CO Emission Intensity
+
+In table 1, through comparison of Peak and Off-Peak CO Emission Statistics, CO emissions during peak periods are significantly higher than those in non-peak periods, with emissions showing wider distribution and greater fluctuations (SD, IQR). The peak emissions also exhibit notably higher extreme values but the minimum difference is not significant. These statistics show that traffic congestion is one of the main drivers of CO emissions during peak hours, and inthisperiod emissions exhibit greater instability. The emission hotspots are almost all concentrated in the peak period, which should be the focus of air quality management.
+
+![](image/COs.png)
+
+table 1. Peak vs Off-Peak CO Emission Intensity Statistics
+
+**2.2 Distribution of Traffic Flow**
+
+In figure 4, LDV traffic flow histograms shows a right-skewed distribution with an exceptionally long tail, extending up to 20,000 veh/h. The box plot reveals a large box with numerous outliers at the upper part, indicating high dispersion in traffic volume. These characteristics indicate that LDVs constitute the majority of road traffic, with significant variations in traffic volume between road sections. Multiple heavily trafficked arterial roads are present, carrying substantial LDV traffic.
+
+![](image/LDV.png){width="641"}
+
+figure 4. Distribution of LDV Traffic Flow
+
+In table 2, LDVs exhibit strong variation and dominate total traffic volume. Peak-hour LDV statistics reflect commuting patterns and are likely a major driver of the congestion pattern. The extremely high SD and max values indicate bursts on specific road segments, showing high spatial difference.
+
+![](image/LDVs.png)
+
+table 2. Peak vs Off-Peak LDV Traffic Statistics
+
+From figure 5, The distribution of NEV traffic flow histograms shows a significant right skew. Most NEV flows fall within the 0–200 veh/h range, with the tail extending to approximately 3000 veh/h. The boxplot's body is notably smaller than LDV's, and its tail contains a series of high value. These patterns show that NEVs experiences high traffic concentration on certain areas, but its overall traffic contribution remains limited.
+
+![](image/NEV.png){width="610"}
+
+figure 5. Distribution of NEV Traffic Flow
+
+For HDVs, and traffic flow histograms show a right-skewed distribution with most traffic flow concentrated between 0–40 veh/h, the box is very small, most HDV flows are low and concentrated (figure 6). These patterns indicate that HDV account for a small proportion of the road network, with most sections experiencing minimal HDV traffic. Only a few roads show significant peak traffic volumes.
+
+![](image/HDV.png)
+
+figure 6. Distribution of HDV Traffic Flow
+
+In table 3, Peak-hour HDV traffic is extremely low, however, Off-Peak HDV traffic is unexpectedly high, with SD and Max values are extremely large in Off-Peak. This pattern indicates a temporal redistribution of freight activity: HDVs avoid peak commuter periods, they operate heavily during off-peak hours, producing large concentrated bursts in certain areas. This aligns with literature suggesting freight movement tends to concentrate geographically and temporally^3^.
+
+![](image/HDVs.png)
+
+table 3. Peak vs Off-Peak HDV Traffic Statistics
+
+### 3. Statistical Testing
+
+The scatter plots with LOESS curves reveal a nonlinear relationship between traffic flow and CO emission intensity.Distribution plots and tables also show the non-normality distribution of both traffic flow and CO emission intensity. What's more, the Shapiro-Wilk normality test for all groups showed that both traffic flow and emission intensity were non-normally distributed. These results provide statistical justification for using nonparametric correlation methods (Spearman).
+
+For LDVs, both time periods show strong positive correlation (table 4). LDVs is the main driver of CO emissions across the road network,they can explains the change in road emissions well, whether it is peak or off-peak. This also indicates that CO hotspots typically occur on congested roads with high LDV traffic flow.
+
+![](image/LDVt.png)
+
+table 4. Peak and Off-Peak HDV–CO Statistical Test Results
+
+NEVs show strong positive correlation with CO emission intensity, but lower than LDVs (table 5). While NEV vehicles have lower emissions per vehicle, their flow variations still show a strong correlation with CO emissions. The reason is not that NEVs directly produce CO^5^[@hooftman2018], but NEVs are densely concentrated in areas with high pedestrian traffic. Thus, NEV flow serves as a representative variable for road congestion levels, while also indicating emission hotspots.
+
+![](image/NEVt.png)
+
+table 5. Peak and Off-Peak ENV–CO Statistical Test Results
+
+In table 6, moderate positive correlation between HDVs and CO emission intensity. However, the vehicle emissions of HDV are significantly higher than those of LDV. The reason behind “moderate” may because HDVs are relatively few in road networks, making their statistical relationships susceptible to dilution by LDVs.
+
+![](image/HDVt.png)
+
+table 6. Peak and Off-Peak HDV–CO Statistical Test Results
+
+In table 7, the near perfect positive correlation between the total vehicle flow and CO emission explains the formation mechanism of road emission hotspots and the characteristics of the emission hotspots that are highly dependent on traffic flow rather than random occurrence.
+
+![](image/Tt.png)
+
+table 7. Peak and Off-Peak Total Flow–CO Statistical Test Results
+
+### 4. Spatial Distribution of Traffic Flow and CO Emissions
+
+In figure 7, deeper red/orange dots appear on urban main roads and central districts during peak periods compared to off-peak hours, indicating higher CO emission intensity. These emission hotspots form continuous belts that overlap with major commuting routes. Given that LDVs account for a significant portion of urban traffic, their pronounced emission peaks during rush hours demonstrate that increased LDV traffic directly contributes to the formation of CO emission hotspots.
+
+![](image/LDVm.png)
+
+figure 7. Peak (a) and Off-Peak (b) LDV–CO Spatial Distribution Map
+
+In figure 8, the darker dots are also larger. This indicates that although NEVs don’t emit CO, their flow variations correlate with traffic congestion levels, making their spatial distribution an indirect indicator of road load.
+
+![](image/NEVm.png)
+
+figure 8. Peak (a) and Off-Peak (b) NEV–CO Spatial Distribution Map
+
+In figure 9, the size of the dots does not match the shade of their color , and the hotspots are mainly distributed in the urban ring road and the urban peripheral route, which is highly consistent with the freight vehicle route.The increase in HDV emissions during off-peak hours indicates that the operating hours of freight vehicles lead to a more off-peak distribution of emission timing.
+
+![](image/HDVm.png)
+
+figure 9. Peak (a) and Off-Peak (b) HDV–CO Spatial Distribution Map
+
+Comparing the spatial distribution of CO Emissions in the Total Traffic Flow between Peak and Off-Peak Periods,the CO emission reduced during off-peak hours (figure 10). However the persistence of several high-emission spots, suggestting they may be caused by structural congestion or road conditions.
+
+![](image/tm.png)
+
+figure 10. Peak (a) and Off-Peak (b) Total Flow–CO Spatial Distribution Map
+
+### 5. Vehicle Contribution Modeling
+
+In figure 11, LDVs show the strongest standardized contribution to CO emissions (β≈0.7+), indicating that during peak hours, LDV traffic fluctuations have the most significant impact on CO emissions. NEVs contribute moderately (β≈0.2). Although NEVs do not directly emit CO, their traffic volume shows statistical correlation with CO emissions, which represents behavioral correlation rather than emission source contribution. Possible explanation is that since NEVs and LDVs operate on the same roads, high NEV traffic often coincides with overall road congestion, leading to elevated CO levels. Heavy-duty vehicles (HDVs) contribute the least (β≈0.1) because their traffic flow is extremely low during peak hours, making their contribution negligible compared to LDVs. The issue isn't low HDV emissions, but rather their limited quantity, resulting in weak statistical contribution.
+
+![](image/cp.png)
+
+figure 11. Standardized Contribution of Each Vehicle Type to CO Emissions During Peak Hour
+
+In table 8, an increase in HDV vehicles would raise CO emissions by approximately 3 g/km/h. Although the regression coefficient is statistically significant, the limited sample size results in negligible overall impact. Each additional LDV results in a modest rise in CO but with its a large quantity, finally making it the primary contributor to the overall effect. The NEV may show significant results in the statistical model because it’s consistent with the overall flow trend, but its actual physical emissions are extremely low, resulting in a low standardized contribution.
+
+![](image/pt.png)
+
+table 8. Regression Coefficients of Vehicle-Type Contributions to CO Emissions During Peak Hour
+
+During off-peak hours, the traffic structure changes, resulting in a change of the contribution order (figure 12). LDV remains the dominant factor (β≈0.8+), but its contribution increases further as it accounts for a higher proportion and exhibits greater volatility. The HDV contribution increased (β≈0.2+) due to a marked rise in HDV numbers during off-peak periods. In contrast, the NEV contribution was virtually negligible (β≈0). Unlike during peak periods, NEV numbers were lower during off-peak periods, and the reduced spatial overlap with CO emission hotspots resulted in a statistically insignificant contribution.
+
+![](image/cop.png)
+
+figure 12. Standardized Contribution of Each Vehicle Type to CO Emissions During Off-Peak Hour
+
+During off-peak hour, the non-significant regression coefficient for NEV indicates no quantifiable direct relationship between NEV flow and CO emissions, confirming that NEV does not emit CO.
+
+![](image/opt.png)
+
+table 9. Regression Coefficients of Vehicle-Type Contributions to CO Emissions During Off-Peak Hour
+
+Overall, during both peak and off-peak periods, LDVs consistently dominated CO emission variations. Although HDVs exhibited high individual vehicle emissions, their limited fleet size resulted in minimal overall contribution. NEVs showed negligible CO emissions, consistent with their physical emission characteristics.
 
 ## Conclusion
 
 ## AI Disclosure
+
+| (1) Warning: Specifying width/height in layout() is now deprecated. Please specify in ggplotly() or plot_ly().
+| I asked AI this warning, it advised me to adjust the code accordingly by removing the layout(height = ...) and instead setting the height in ggplotly().
+| (2) Warning in p \<- p + geom_point(aes(text = paste("Site:", ID, : Ignoring unknown aesthetics: text.
+| I asked AI this warning, it advised me to move the text aesthetic from the geom⎽point() function to the main aes() function, so that ggplot2 won't generate warnings, while plotly can still recognize and use this text information to create hover tooltips
+| (3) Warning: Error in select: unused arguments (Statistic, Value)
+| I asked AI this warning, and it advised me to replace all select() calls with subset methods in base R
+| (4) Optimize the app layout
+| I asked AI how to display statistical test tables horizontally, it advised me to convert each statistical indicator (each row) from vertical to horizontal arrangement (each column), simplify column names and reduce the number of decimal places in numbers to save space, adjust the data frame structure to have only one row, with each column representing a statistical measure.
 
 ## References
 
 1.  Uherek, E., Halenka, T., Borken-Kleefeld, J., Balkanski, Y., Berntsen, T., Borrego, C., Gauss, M., Hoor, P., Juda-Rezler, K., and Lelieveld, J.: Transport impacts on atmosphere and climate: Land transport, Atmos. Environ., 44, 4772–4816, https://doi.org/10.1016/j.atmosenv.2010.01.002, 2010
 2.  Zhang, S., Niu, T., Wu, Y., Zhang, K. M., Wallington, T. J., Xie, Q., Wu, X., and Xu, H.: Fine-grained vehicle emission management using intelligent transportation system data, Environ. Pollut., 241, 1027–1037, https://doi.org/10.1016/j.envpol.2018.06.016, 2018.
 3.  Yang, D., Zhang, Y., Wu, R., Song, Y., and Xu, H.: A review of on-road vehicle emission inventory, E3S Web of Conferences, 27, 01027, https://doi.org/10.1051/e3sconf/20222701027, 2022.
+4.  Wang, Y., Wang, H., Zhang, B., Liu, P., Wang, X., Si, S., Xue, L., Zhang, Q., & Wang, Q. (2025). High-resolution mapping of on-road vehicle emissions with real-time traffic datasets based on big data. Atmospheric Chemistry and Physics, 25, 5537-5555. https://doi.org/10.5194/acp-25-5537-2025
+5.  Hooftman, N., Oliveira, L., Messagie, M., Coosemans, T., & Van Mierlo, J. (2016). A review of the European passenger car regulations—Real driving emissions vs local air quality. Renewable and Sustainable Energy Reviews, 86, 1–21. https://doi.org/10.1016/j.rser.2018.01.012
 
 ## 

@@ -16,15 +16,11 @@ fluidPage(
 
 # Sheet selection
 selectInput("sheet_select", "Select Time Period:",
-            choices = c("Overall Average", "Off-Peak Hour", "Peak Hour", 
-                         "Weekday", "Weekend", "Early Morning"),
-            selected = "Overall Average"),
+            choices = c("Off-Peak Hour", "Peak Hour"),
+            selected = "Peak Hour"),
 # Pollutant selection       
 selectInput("pollutant_select", "Select Pollutant:",
-            choices = c("CO" = "CO Emission Intensity (g/km/h)",
-                        "HC" = "HC Emission Intensity (g/km/h)",
-                        "NOx" = "NOx Emission Intensity (g/km/h)", 
-                        "PM\u2082.\u2085" = "PM2.5 Emission Intensity (g/km/h)"),
+            choices = c("CO" = "CO Emission Intensity (g/km/h)"),
             selected = "CO Emission Intensity (g/km/h)"),
 # Traffic flow selection       
 selectInput("traffic_select", "Select Vehicle Type:",
@@ -68,19 +64,30 @@ mainPanel(
    tabPanel("Statistics",
     fluidRow(
      column(6,
-      h4("Pollution Statistics"),
+      h4("CO Statistics"),
       DTOutput("pollution_stats")),
      column(6,
       h4("Traffic Statistics"),
       DTOutput("traffic_stats"))),
 br(),
     fluidRow(
-     column(6,
-      h4("Statistical Tests"),
+     column(8,
+      h4("Traffic Statistical Tests"),
       DTOutput("statistical_tests")))),
+
    tabPanel("Map",
     fluidRow(
      leafletOutput("map_plot", height = "650px"))),
+
+   tabPanel("Vehicle Contribution",
+    fluidRow(
+     column(10, 
+      plotlyOutput("vehicle_contribution_plot", height = "400px"))),
+br(),    
+    fluidRow(
+     column(6, 
+      DTOutput("vehicle_contribution_table")))),
+
    tabPanel("Data Table",
     fluidRow(
       DTOutput("data_table")))
