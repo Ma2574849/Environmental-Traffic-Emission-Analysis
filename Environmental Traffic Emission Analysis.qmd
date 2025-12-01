@@ -60,7 +60,7 @@ This Shiny application is designed to explore the statistical relationship betwe
 **1.4 Dependencies**
 
 | R version: 4.5.2
-| R packages: shiny, ggplot2, dplyr, plotly, DT, ntPsyc, leaflet
+| R packages: shiny, ggplot2, dplyr, plotly, DT, QuantPsyc, leaflet
 
 **1.5 AI tools**
 
@@ -236,16 +236,30 @@ Overall, during both peak and off-peak periods, LDVs consistently dominated CO e
 
 ## Conclusion
 
+This study developed an interactive Shiny App that integrates real-time traffic flow data with link-level CO emission intensity to explore how different vehicle types shape the formation of urban emission hotspots. Across both peak and off-peak periods, CO emissions showed a highly right-skewed distribution with numerous extreme values, confirming strong spatial and temporal heterogeneity in emission intensity. Statistical tests revealed consistently significant positive correlations between traffic flow and emissions, while the level of the relationships varied by vehicle type. Linear modeling indicated that LDVs constitute the dominant contributor to CO emissions under all time conditions, whereas HDVs, although fewer in number, exhibit high per-vehicle emission contributions. NEVs showed no meaningful association with CO levels, aligning with their near-zero tailpipe emissions. Spatial visualizations further demonstrated that the highest-emission road coincide with high flow LDVs routes or HDVs freight routes and vertify the link between localized traffic patterns and emission hotspots. Overall, by combining statistical analysis with interactive visualization, this app provides a practical tool for users to diagnose urban emission problems. What's more, it can provide evidence for proposing targeted traffic and environmental management strategies.
+
 ## AI Disclosure
 
 | (1) Warning: Specifying width/height in layout() is now deprecated. Please specify in ggplotly() or plot_ly().
-| I asked AI this warning, it advised me to adjust the code accordingly by removing the layout(height = ...) and instead setting the height in ggplotly().
+| Tools: ChatGPT
+| Appliction: I asked AI this warning, it advised me to adjust the code accordingly by removing the layout(height = ...) and instead setting the height in ggplotly().
+| Verification method: Test the code snippet to ensure the function executes correctly.
 | (2) Warning in p \<- p + geom_point(aes(text = paste("Site:", ID, : Ignoring unknown aesthetics: text.
-| I asked AI this warning, it advised me to move the text aesthetic from the geom⎽point() function to the main aes() function, so that ggplot2 won't generate warnings, while plotly can still recognize and use this text information to create hover tooltips
+| Tools: ChatGPT
+| Appliction: I asked AI this warning, it advised me to move the text aesthetic from the geom⎽point() function to the main aes() function, so that ggplot2 won't generate warnings, while plotly can still recognize and use this text information to create hover tooltips
+| Verification method: Test the code snippet to ensure the function executes correctly.
 | (3) Warning: Error in select: unused arguments (Statistic, Value)
-| I asked AI this warning, and it advised me to replace all select() calls with subset methods in base R
+| Tools: Deepseek
+| Appliction: I asked AI this warning, and it advised me to replace all select() calls with subset methods in base R
+| Verification method: Test the code snippet to ensure the function executes correctly.
 | (4) Optimize the app layout
-| I asked AI how to display statistical test tables horizontally, it advised me to convert each statistical indicator (each row) from vertical to horizontal arrangement (each column), simplify column names and reduce the number of decimal places in numbers to save space, adjust the data frame structure to have only one row, with each column representing a statistical measure.
+| Tools: Deepseek
+| Application: I asked AI how to display statistical test tables horizontally, it advised me to convert each statistical indicator (each row) from vertical to horizontal arrangement (each column), simplify column names and reduce the number of decimal places in numbers to save space, adjust the data frame structure to have only one row, with each column representing a statistical measure.
+| Verification method: Run the Shiny App to see if the layout is clearer.
+| (5) Optimize the server structure
+| Tools: ChatGPT
+| Application: I asked AI if the correlation analysis part has the repeated function with statistical test part, because the the outputs are duplicated. AI told me that they did have duplicated problem and advised me to just hold the statistical test part.
+| Verification method: Run the Shiny App to see if the modified code lacks analysis results.
 
 ## References
 
@@ -254,5 +268,3 @@ Overall, during both peak and off-peak periods, LDVs consistently dominated CO e
 3.  Yang, D., Zhang, Y., Wu, R., Song, Y., and Xu, H.: A review of on-road vehicle emission inventory, E3S Web of Conferences, 27, 01027, https://doi.org/10.1051/e3sconf/20222701027, 2022.
 4.  Wang, Y., Wang, H., Zhang, B., Liu, P., Wang, X., Si, S., Xue, L., Zhang, Q., & Wang, Q. (2025). High-resolution mapping of on-road vehicle emissions with real-time traffic datasets based on big data. Atmospheric Chemistry and Physics, 25, 5537-5555. https://doi.org/10.5194/acp-25-5537-2025
 5.  Hooftman, N., Oliveira, L., Messagie, M., Coosemans, T., & Van Mierlo, J. (2016). A review of the European passenger car regulations—Real driving emissions vs local air quality. Renewable and Sustainable Energy Reviews, 86, 1–21. https://doi.org/10.1016/j.rser.2018.01.012
-
-## 
